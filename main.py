@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from operator import attrgetter
 
 
 class Joueur:
@@ -15,9 +16,13 @@ class Joueur:
         """Modifier le classement"""
         self.elo = nouvel_elo
 
+    def indice(self, liste_joueurs):
+        """Retourner l'index du joueur dans la liste des joueurs"""
+        return liste_joueurs.index(self)
+
     def __str__(self):
         ans = date.today().year - self.date_naissance.year
-        return f'{self.prenom} {self.nom} {ans} ans classement {self.elo} pts elo'
+        return f'{self.prenom} {self.nom} {ans} ans classement {self.elo} elo'
 
 
 class Tournoi:
@@ -32,9 +37,26 @@ class Tournoi:
         else:
             self.date_fin = date_debut
         self.nb_tour = nb_tour
-        self.round_liste = []
+        self.liste_tours = []
         self.compteur_temps = compteur_temps
         self.description = description
+
+    def enregistrer(self, tour):
+        """Enregistrement d'un tour du tournoi"""
+        self.liste_tours.append(tour)
+
+    def somme_points(self):
+        """Calculer le nombre total de points par joueur"""
+        joueurs_points = {}
+        for tour in self.liste_tours:
+            for match in tour.liste_matchs:
+                if tour.nom == "Round 1":
+                    joueurs_points[match.blanc[0]] = match.blanc[1]
+                    joueurs_points[match.noir[0]] = match.noir[1]
+                else:
+                    joueurs_points[match.blanc[0]] += match.blanc[1]
+                    joueurs_points[match.noir[0]] += match.noir[1]
+        return joueurs_points
 
 
 class Tour:
@@ -47,15 +69,24 @@ class Tour:
         self.liste_matchs = []
 
     def organiser_premier_tour(self, liste_joueurs):
-        """Tri des joueurs par odre décroissant elo et affectation des matchs premier tour"""
-        joueurs_tries = sorted(liste_joueurs, key=lambda joueur: joueur.elo, reverse=True)
-        self.liste_matchs.append(Match(joueurs_tries[0], joueurs_tries[4]))
-        self.liste_matchs.append(Match(joueurs_tries[1], joueurs_tries[5]))
-        self.liste_matchs.append(Match(joueurs_tries[2], joueurs_tries[6]))
-        self.liste_matchs.append(Match(joueurs_tries[3], joueurs_tries[7]))
+        """Tri des joueurs par ordre décroissant elo et affectation des matchs premier tour"""
+        joueurs_tries = sorted(liste_joueurs, key=attrgetter('elo'), reverse=True)
+        self.liste_matchs.append(Match(joueurs_tries[0].indice(liste_joueurs), joueurs_tries[4].indice(liste_joueurs)))
+        self.liste_matchs.append(Match(joueurs_tries[1].indice(liste_joueurs), joueurs_tries[5].indice(liste_joueurs)))
+        self.liste_matchs.append(Match(joueurs_tries[2].indice(liste_joueurs), joueurs_tries[6].indice(liste_joueurs)))
+        self.liste_matchs.append(Match(joueurs_tries[3].indice(liste_joueurs), joueurs_tries[7].indice(liste_joueurs)))
 
-    def organiser_tour_suivant(self):
-        pass
+    def organiser_tour_suivant(self, dico_joueurs_points, liste_joueurs):
+        """Tri des joueurs par ordre décroissant des points / elo et affectation des matchs tour suivant"""
+        liste_tri_suisse = []
+        for clef in dico_joueurs_points:
+            liste_tri_suisse.append(TriSuisse(clef, dico_joueurs_points[clef], liste_joueurs[clef].elo))
+        joueurs_tries = sorted(liste_tri_suisse, key=attrgetter('points', 'elo'), reverse=True)
+        for i in range(0, 8): print(joueurs_tries[i].indice, joueurs_tries[i].points, joueurs_tries[i].elo)
+        self.liste_matchs.append(Match(joueurs_tries[0].indice, joueurs_tries[1].indice))
+        self.liste_matchs.append(Match(joueurs_tries[2].indice, joueurs_tries[3].indice))
+        self.liste_matchs.append(Match(joueurs_tries[4].indice, joueurs_tries[5].indice))
+        self.liste_matchs.append(Match(joueurs_tries[6].indice, joueurs_tries[7].indice))
 
     def lancer(self, date_heure_debut):
         """Affectation de la date et heure de début du tour"""
@@ -63,6 +94,8 @@ class Tour:
 
     def terminer(self, date_heure_fin):
         """Affectation de la date et heure de fin du tour"""
+        for match in self.liste_matchs:
+            print(match)
         self.date_heure_fin = date_heure_fin
 
 
@@ -70,11 +103,30 @@ class Match:
     """Match"""
 
     def __init__(self, joueur_blanc, joueur_noir):
-        self.blanc = [joueur_blanc, 0]
-        self.noir = [joueur_noir, 0]
+        self.blanc = [joueur_blanc, 0.0]
+        self.noir = [joueur_noir, 0.0]
+
+    def resultat(self, statut):
+        """Affectation des points en fonction du résultat du match"""
+        if statut == "G":
+            self.blanc[1] = 1.0
+        elif statut == "P":
+            self.noir[1] = 1.0
+        else:
+            self.blanc[1] = 0.5
+            self.noir[1] = 0.5
 
     def __str__(self):
-        return f'{self.blanc[0].prenom} contre {self.noir[0].prenom}'
+        return f'{self.blanc[0]} {self.blanc[1]} contre {self.noir[0]} {self.noir[1]}'
+
+
+class TriSuisse:
+    """Clef pour le tri tournoi système Suisse"""
+
+    def __init__(self, indice, points, elo):
+        self.indice = indice
+        self.points = points
+        self.elo = elo
 
 
 def joueurs_inscrits():
@@ -89,17 +141,34 @@ def joueurs_inscrits():
     return joueur1, joueur2, joueur3, joueur4, joueur5, joueur6, joueur7, joueur8
 
 
+def saisie_resultats(tour):
+    tour.liste_matchs[0].resultat("G")
+    tour.liste_matchs[1].resultat("G")
+    tour.liste_matchs[2].resultat("P")
+    tour.liste_matchs[3].resultat("N")
+    return
+
+
 def main():
     tournoi = Tournoi("Chess", "Versailles", date.today())
-
-    tour1 = Tour("Round 1")
-    tour1.organiser_premier_tour(joueurs_inscrits())
-    tour1.lancer(datetime.today())
-    tour1.terminer(datetime.today())
-
     print(f'Tournoi de {tournoi.lieu} le {tournoi.date_debut}')
-    print(f'Tour {tour1.nom} {tour1.date_heure_debut} premier match {tour1.liste_matchs[0]}')
-    print(f'Tour {tour1.nom} dernier match {tour1.liste_matchs[3]} {tour1.date_heure_fin}')
+    liste_joueurs = joueurs_inscrits()
+    for i in range(0, 8): print(liste_joueurs[i])
+
+    nb_tour = 0
+    while tournoi.nb_tour > nb_tour:
+        nb_tour += 1
+        tour = Tour(f'Round {nb_tour}')
+        if nb_tour == 1:
+            tour.organiser_premier_tour(liste_joueurs)
+        else:
+            tour.organiser_tour_suivant(tournoi.somme_points(), liste_joueurs)
+        tour.lancer(datetime.today())
+        saisie_resultats(tour)
+        tour.terminer(datetime.today())
+        tournoi.enregistrer(tour)
+        print(f'Tour {tour.nom} {tour.date_heure_debut} premier match {tour.liste_matchs[0]}')
+        print(f'Tour {tour.nom} dernier match {tour.liste_matchs[3]} {tour.date_heure_fin}')
     return
 
 
