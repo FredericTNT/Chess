@@ -28,7 +28,7 @@ class Joueur:
 class Tournoi:
     """Tournoi"""
 
-    def __init__(self, nom, lieu, date_debut, compteur_temps="Blitz", description="", nb_tour=4, date_fin=None):
+    def __init__(self, nom, lieu, date_debut, compteur_temps="Blitz", description="", nb_tour=9, date_fin=None):
         self.nom = nom
         self.lieu = lieu
         self.date_debut = date_debut
@@ -58,12 +58,26 @@ class Tournoi:
                     joueurs_points[match.noir[0]] += match.noir[1]
         return joueurs_points
 
+    def rencontres(self, indice_joueur):
+        """liste des indices des joueurs rencontrés"""
+        liste_indices_joueurs = []
+        for tour in self.liste_tours:
+            for match in tour.liste_matchs:
+                if indice_joueur == match.blanc[0]:
+                    liste_indices_joueurs.append(match.noir[0])
+                    break
+                elif indice_joueur == match.noir[0]:
+                    liste_indices_joueurs.append(match.blanc[0])
+                    break
+        return liste_indices_joueurs
+
 
 class Tour:
     """Tour"""
 
-    def __init__(self, nom):
-        self.nom = nom
+    def __init__(self, numero):
+        self.numero = numero
+        self.nom = f'Round {numero}'
         self.date_heure_debut = None
         self.date_heure_fin = None
         self.liste_matchs = []
@@ -71,22 +85,72 @@ class Tour:
     def organiser_premier_tour(self, liste_joueurs):
         """Tri des joueurs par ordre décroissant elo et affectation des matchs premier tour"""
         joueurs_tries = sorted(liste_joueurs, key=attrgetter('elo'), reverse=True)
-        self.liste_matchs.append(Match(joueurs_tries[0].indice(liste_joueurs), joueurs_tries[4].indice(liste_joueurs)))
-        self.liste_matchs.append(Match(joueurs_tries[1].indice(liste_joueurs), joueurs_tries[5].indice(liste_joueurs)))
-        self.liste_matchs.append(Match(joueurs_tries[2].indice(liste_joueurs), joueurs_tries[6].indice(liste_joueurs)))
-        self.liste_matchs.append(Match(joueurs_tries[3].indice(liste_joueurs), joueurs_tries[7].indice(liste_joueurs)))
+        self.liste_matchs.append(Match(joueurs_tries[0].indice(liste_joueurs), joueurs_tries[5].indice(liste_joueurs)))
+        self.liste_matchs.append(Match(joueurs_tries[1].indice(liste_joueurs), joueurs_tries[6].indice(liste_joueurs)))
+        self.liste_matchs.append(Match(joueurs_tries[2].indice(liste_joueurs), joueurs_tries[7].indice(liste_joueurs)))
+        self.liste_matchs.append(Match(joueurs_tries[3].indice(liste_joueurs), joueurs_tries[8].indice(liste_joueurs)))
+        self.liste_matchs.append(Match(joueurs_tries[4].indice(liste_joueurs), joueurs_tries[9].indice(liste_joueurs)))
 
-    def organiser_tour_suivant(self, dico_joueurs_points, liste_joueurs):
+    def position_blanc(self, suisse):
+        """Première position d'un adversaire blanc dans la liste"""
+        p_blanc = 0
+        while not suisse[p_blanc].adversaire:
+            p_blanc += 1
+        suisse[p_blanc].adversaire = False
+        return p_blanc
+
+    def position_noir(self, p_blanc, suisse):
+        """Première position d'un adversaire noir dans la liste et position = -1 en cas d'échec"""
+        p_noir = p_blanc + 1
+        while (not suisse[p_noir].adversaire) or suisse[p_noir].indice in suisse[p_blanc].rencontres:
+            if p_noir < 9:
+                p_noir += 1
+            else:
+                print("Adversaire non trouvé")
+                p_noir = -1
+                break
+        if p_noir >= 0: suisse[p_noir].adversaire = False
+        return p_noir
+
+    def match_generation(self, nb_match, p_blanc, p_noir, suisse):
+        """Génération des match pour un tour"""
+        if nb_match == 0:
+            return True
+        else:
+            i = self.position_blanc(suisse)
+            j = self.position_noir(i, suisse)
+            if j == -1:
+                suisse[i].adversaire = True
+                suisse[p_blanc].adversaire = True
+                suisse[p_noir].adversaire = True
+                for y in suisse:
+                    if (len(y.rencontres) > (self.numero - 1)) and (suisse.index(y) > p_blanc):
+                        y.rencontres.pop()
+                suisse[p_blanc].rencontres.append(suisse[p_noir].indice)
+                for k in range(0, 10): print(k, suisse[k].indice, suisse[k].points, suisse[k].elo, suisse[k].rencontres, suisse[k].adversaire)
+                return False
+            else:
+                print(nb_match - 1, i, j)
+                generation = self.match_generation(nb_match - 1, i, j, suisse)
+                if generation:
+                    self.liste_matchs.append(Match(suisse[i].indice, suisse[j].indice))
+                return generation
+
+
+    def organiser_tour_suivant(self, joueurs_points, liste_joueurs, tournoi):
         """Tri des joueurs par ordre décroissant des points / elo et affectation des matchs tour suivant"""
-        liste_tri_suisse = []
-        for clef in dico_joueurs_points:
-            liste_tri_suisse.append(TriSuisse(clef, dico_joueurs_points[clef], liste_joueurs[clef].elo))
-        joueurs_tries = sorted(liste_tri_suisse, key=attrgetter('points', 'elo'), reverse=True)
-        for i in range(0, 8): print(joueurs_tries[i].indice, joueurs_tries[i].points, joueurs_tries[i].elo)
-        self.liste_matchs.append(Match(joueurs_tries[0].indice, joueurs_tries[1].indice))
-        self.liste_matchs.append(Match(joueurs_tries[2].indice, joueurs_tries[3].indice))
-        self.liste_matchs.append(Match(joueurs_tries[4].indice, joueurs_tries[5].indice))
-        self.liste_matchs.append(Match(joueurs_tries[6].indice, joueurs_tries[7].indice))
+        liste_suisse = []
+        for clef in joueurs_points:
+            liste_suisse.append(TriSuisse(clef, joueurs_points[clef], liste_joueurs[clef].elo, tournoi.rencontres(clef)))
+        suisse_tries = sorted(liste_suisse, key=attrgetter('points', 'elo'), reverse=True)
+        for i in range(0, 10):
+            print(suisse_tries[i].indice, suisse_tries[i].points, suisse_tries[i].elo, suisse_tries[i].rencontres,
+                  suisse_tries[i].adversaire)
+        generation = False
+        while not generation:
+            for y in suisse_tries:
+                y.adversaire = True
+            generation = self.match_generation(5, 0, 0, suisse_tries)
 
     def lancer(self, date_heure_debut):
         """Affectation de la date et heure de début du tour"""
@@ -123,10 +187,12 @@ class Match:
 class TriSuisse:
     """Clef pour le tri tournoi système Suisse"""
 
-    def __init__(self, indice, points, elo):
+    def __init__(self, indice, points, elo, rencontres):
         self.indice = indice
         self.points = points
         self.elo = elo
+        self.rencontres = rencontres
+        self.adversaire = True
 
 
 def joueurs_inscrits():
@@ -138,7 +204,9 @@ def joueurs_inscrits():
     joueur6 = Joueur("F", "Nicolas", date(1999, 2, 11), "M", 1250)
     joueur7 = Joueur("G", "Arthur", date(2002, 1, 6), "M", 1500)
     joueur8 = Joueur("H", "Frédéric", date(1962, 7, 22), "M", 1525)
-    return joueur1, joueur2, joueur3, joueur4, joueur5, joueur6, joueur7, joueur8
+    joueur9 = Joueur("G", "Arthur", date(2002, 1, 6), "M", 1500)
+    joueur10 = Joueur("H", "Frédéric", date(1962, 7, 22), "M", 1525)
+    return joueur1, joueur2, joueur3, joueur4, joueur5, joueur6, joueur7, joueur8, joueur9, joueur10
 
 
 def saisie_resultats(tour):
@@ -146,6 +214,7 @@ def saisie_resultats(tour):
     tour.liste_matchs[1].resultat("G")
     tour.liste_matchs[2].resultat("P")
     tour.liste_matchs[3].resultat("N")
+    tour.liste_matchs[4].resultat("N")
     return
 
 
@@ -153,16 +222,16 @@ def main():
     tournoi = Tournoi("Chess", "Versailles", date.today())
     print(f'Tournoi de {tournoi.lieu} le {tournoi.date_debut}')
     liste_joueurs = joueurs_inscrits()
-    for i in range(0, 8): print(liste_joueurs[i])
+    for i in range(0, 10): print(liste_joueurs[i])
 
     nb_tour = 0
     while tournoi.nb_tour > nb_tour:
         nb_tour += 1
-        tour = Tour(f'Round {nb_tour}')
+        tour = Tour(nb_tour)
         if nb_tour == 1:
             tour.organiser_premier_tour(liste_joueurs)
         else:
-            tour.organiser_tour_suivant(tournoi.somme_points(), liste_joueurs)
+            tour.organiser_tour_suivant(tournoi.somme_points(), liste_joueurs, tournoi)
         tour.lancer(datetime.today())
         saisie_resultats(tour)
         tour.terminer(datetime.today())
