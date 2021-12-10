@@ -1,6 +1,6 @@
 from datetime import date, datetime
 import random
-from echecs.menu import Menu, LigneMenu, Color
+from echecs.menu import Menu, LigneMenu
 from echecs.joueur import Joueur
 from echecs.tournoi import Tournoi, Tour
 
@@ -38,6 +38,9 @@ def menu_tournoi(tournoi):
         match menu.choix:
             case "1":
                 liste_joueurs = joueurs_inscrits(NB_JOUEURS)
+                print(f"\n-------- Liste des joueurs --------\n")
+                for joueur in liste_joueurs:
+                    print(f"  Joueur {liste_joueurs.index(joueur)} {joueur}")
                 menu.liste_lignes[menu.indice("1")].actif = False
                 menu.liste_lignes[menu.indice("2")].actif = True
             case "2":
@@ -48,14 +51,15 @@ def menu_tournoi(tournoi):
                 menu.liste_lignes[menu.indice("3")].actif = True
                 if tour.numero == 1:
                     tour.organiser_premier_tour(liste_joueurs)
-                    tournoi.enregistrer_tour(tour)
-                elif tour.numero <= tournoi.nb_tour:
+                else:
                     tour.organiser_tour_suivant(tournoi.somme_points(), liste_joueurs, tournoi)
-                    tournoi.enregistrer_tour(tour)
+                tournoi.enregistrer_tour(tour)
+                print(tour)
             case "3":
                 saisie_resultats(tour, int(NB_JOUEURS / 2))
                 tour.terminer(datetime.today())
                 tournoi.enregistrer_tour(tour)
+                print(tour)
                 menu.liste_lignes[menu.indice("3")].actif = False
                 if nb_tour < tournoi.nb_tour:
                     menu.liste_lignes[menu.indice("2")].actif = True
@@ -84,7 +88,7 @@ def main():
             case "2" | "3" | "4" | "5":
                 pass
             case "9":
-                print(Color.CYAN + Color.SAUTLIGNE + "  Hello world" + Color.END)
+                print("\n  Hello world")
     return
 
 

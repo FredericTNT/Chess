@@ -33,7 +33,7 @@ class Tournoi:
         joueurs_points = {}
         for tour in self.liste_tours:
             for match in tour.liste_matchs:
-                if tour.nom == "Round 1":
+                if tour.numero == 1:
                     joueurs_points[match.blanc[0]] = match.blanc[1]
                     joueurs_points[match.noir[0]] = match.noir[1]
                 else:
@@ -70,7 +70,6 @@ class Tour:
         joueurs_tries = sorted(liste_joueurs, key=attrgetter('elo'), reverse=True)
         k = int(len(joueurs_tries) / 2)
         for i in range(0, int(len(joueurs_tries)/2)):
-            print(f'[{i}]  {joueurs_tries[i]}  contre  [{k}]  {joueurs_tries[k]}')
             self.liste_matchs.append(Match(joueurs_tries[i].indice(liste_joueurs),
                                            joueurs_tries[k].indice(liste_joueurs)))
             k += 1
@@ -90,7 +89,6 @@ class Tour:
             if p_noir < index_max_joueur:
                 p_noir += 1
             else:
-                print("Adversaire non trouvé")
                 p_noir = -1
                 break
         if p_noir >= 0:
@@ -113,11 +111,8 @@ class Tour:
                         while len(y.rencontres) > (self.numero - 1):
                             y.rencontres.pop()
                 suisse[p_blanc].rencontres.append(suisse[p_noir].indice)
-                for y in suisse:
-                    print(suisse.index(y), y.indice, y.points, y.elo, y.rencontres, y.adversaire)
                 return False
             else:
-                print(nb_match - 1, i, j)
                 generation = self.match_generation(nb_match - 1, i, j, suisse, index_max_joueur)
                 if generation:
                     self.liste_matchs.append(Match(suisse[i].indice, suisse[j].indice))
@@ -130,18 +125,14 @@ class Tour:
             liste_suisse.append(TriSuisse(clef, joueurs_points[clef], liste_joueurs[clef].elo,
                                           tournoi.rencontres(clef)))
         suisse_tries = sorted(liste_suisse, key=attrgetter('points', 'elo'), reverse=True)
-        for y in suisse_tries:
-            print(suisse_tries.index(y), y.indice, y.points, y.elo, y.rencontres, y.adversaire)
         nb_match = int(len(liste_joueurs)/2)
         generation = False
         while not generation:
             for y in suisse_tries:
                 y.adversaire = True
             if len(suisse_tries[0].rencontres) == len(suisse_tries):
-                print("Appairage par défaut")
                 k = 1
                 for i in range(0, len(suisse_tries), 2):
-                    print(f'[{i}]  {suisse_tries[i]}  contre  [{k}]  {suisse_tries[k]}')
                     self.liste_matchs.append(Match(suisse_tries[i].indice, suisse_tries[k].indice))
                     k += 2
                 break
@@ -153,9 +144,16 @@ class Tour:
 
     def terminer(self, date_heure_fin):
         """Affectation de la date et heure de fin du tour"""
-        for match in self.liste_matchs:
-            print(match)
         self.date_heure_fin = date_heure_fin
+
+    def __str__(self):
+        """Générer l'affichage du tour"""
+        page = f"\n-------- Tour {self.nom} --------\n"
+        for match in self.liste_matchs:
+            page += f"\n  Joueur {match.blanc[0]} (R) {match.blanc[1]} " \
+                    f"contre Joueur {match.noir[0]} (R) {match.noir[1]}"
+        page += "\n"
+        return page
 
 
 class Match:
@@ -174,9 +172,6 @@ class Match:
         else:
             self.blanc[1] = 0.5
             self.noir[1] = 0.5
-
-    def __str__(self):
-        return f'{self.blanc[0]} {self.blanc[1]} contre {self.noir[0]} {self.noir[1]}'
 
 
 class TriSuisse:

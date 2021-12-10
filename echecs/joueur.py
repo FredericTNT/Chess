@@ -17,4 +17,4 @@ class Joueur:
         return liste_joueurs.index(self)
 
     def __str__(self):
-        return f'{self.prenom} classement {self.elo} elo'
+        return f'{self.prenom} {self.nom} classement {self.elo} elo'
