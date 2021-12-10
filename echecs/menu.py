@@ -1,4 +1,7 @@
+from colored import attr
+
 class Color:
+    RESET = attr(0)
     PURPLE = '\033[95m'
     CYAN = '\033[96m'
     DARKCYAN = '\033[36m'
@@ -47,7 +50,7 @@ class Menu:
 
     def __str__(self):
         """Générer l'affichage du menu"""
-        page = f"{Color.SAUTLIGNE}-------- {self.titre} --------{Color.SAUTLIGNE}"
+        page = f"{Color.RESET}{Color.SAUTLIGNE}-------- {self.titre} --------{Color.SAUTLIGNE}"
         for ligne in self.liste_lignes:
             if ligne.actif:
                 page += f"{Color.SAUTLIGNE}{Color.GREEN}  {ligne.clef}. {ligne.texte}{Color.END}"
