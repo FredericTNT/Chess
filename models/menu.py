@@ -1,5 +1,6 @@
 from colored import attr
 
+
 class Color:
     RESET = attr(0)
     PURPLE = '\033[95m'
@@ -22,6 +23,7 @@ class Menu:
         self.titre = titre
         self.liste_lignes = []
         self.choix = "0"
+        self.etat = None
 
     def ajouter_ligne(self, ligne_menu):
         """Ajouter une nouvelle ligne dans le menu"""
@@ -56,6 +58,9 @@ class Menu:
                 page += f"{Color.SAUTLIGNE}{Color.GREEN}  {ligne.clef}. {ligne.texte}{Color.END}"
             else:
                 page += f"{Color.SAUTLIGNE}  {ligne.clef}. {ligne.texte}"
+        if self.etat:
+            page += f"{Color.SAUTLIGNE}{Color.SAUTLIGNE}{Color.CYAN}  {self.etat}{Color.END}"
+            self.etat = None
         page += Color.SAUTLIGNE
         return page
 

@@ -4,7 +4,7 @@ from operator import attrgetter
 class Tournoi:
     """Tournoi"""
 
-    def __init__(self, nom, lieu, date_debut, compteur_temps="Blitz", description="", nb_tour=4, date_fin=None):
+    def __init__(self, nom, lieu, date_debut, date_fin=None, nb_tour=4, liste_tours=None, compteur_temps="Blitz", description=""):
         self.nom = nom
         self.lieu = lieu
         self.date_debut = date_debut
@@ -13,7 +13,10 @@ class Tournoi:
         else:
             self.date_fin = date_debut
         self.nb_tour = nb_tour
-        self.liste_tours = []
+        if liste_tours:
+            self.liste_tours = liste_tours
+        else:
+            self.liste_tours = []
         self.compteur_temps = compteur_temps
         self.description = description
 
@@ -58,12 +61,18 @@ class Tournoi:
 class Tour:
     """Tour"""
 
-    def __init__(self, numero):
+    def __init__(self, numero, nom=None, date_heure_debut=None, date_heure_fin=None, liste_matchs=None):
         self.numero = numero
-        self.nom = f'Round {numero}'
-        self.date_heure_debut = None
-        self.date_heure_fin = None
-        self.liste_matchs = []
+        if nom:
+            self.nom = nom
+        else:
+            self.nom = f'Round {numero}'
+        self.date_heure_debut = date_heure_debut
+        self.date_heure_fin = date_heure_fin
+        if liste_matchs:
+            self.liste_matchs = liste_matchs
+        else:
+            self.liste_matchs = []
 
     def organiser_premier_tour(self, liste_joueurs):
         """Tri des joueurs par ordre décroissant elo et affectation des matchs premier tour"""
@@ -73,6 +82,7 @@ class Tour:
             self.liste_matchs.append(Match(joueurs_tries[i].indice(liste_joueurs),
                                            joueurs_tries[k].indice(liste_joueurs)))
             k += 1
+        return
 
     def position_blanc(self, suisse):
         """Première position valide d'un adversaire blanc dans la liste"""
@@ -137,6 +147,7 @@ class Tour:
                     k += 2
                 break
             generation = self.match_generation(nb_match, 0, 0, suisse_tries, len(liste_suisse) - 1)
+        return
 
     def lancer(self, date_heure_debut):
         """Affectation de la date et heure de début du tour"""
@@ -159,9 +170,9 @@ class Tour:
 class Match:
     """Match"""
 
-    def __init__(self, joueur_blanc, joueur_noir):
-        self.blanc = [joueur_blanc, 0.0]
-        self.noir = [joueur_noir, 0.0]
+    def __init__(self, joueur_blanc, joueur_noir, resultat_blanc=0.0, resultat_noir=0.0):
+        self.blanc = [joueur_blanc, resultat_blanc]
+        self.noir = [joueur_noir, resultat_noir]
 
     def resultat(self, statut):
         """Affectation des points en fonction du résultat du match"""
