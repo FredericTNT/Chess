@@ -1,13 +1,13 @@
 from models.joueur import Joueur
 from models.tournoi import Tournoi, Tour, Match
+from models.menu import LigneMenu
 from datetime import date, datetime
 from tinydb import Query
 
 
-def serial_joueurs(liste_joueurs, tournoi, joueurs_table):
+def serial_joueurs(liste_joueurs, clef_tournoi, joueurs_table):
     """Serialisation de la liste des joueurs et insertion dans la table joueurs"""
     query_joueurs = Query()
-    clef_tournoi = tournoi.nom + tournoi.lieu + date.isoformat(tournoi.date_debut)
     joueurs_table.remove(query_joueurs.clef == clef_tournoi)
     for joueur in liste_joueurs:
         serialized_joueur = {
@@ -22,10 +22,9 @@ def serial_joueurs(liste_joueurs, tournoi, joueurs_table):
     return
 
 
-def unserial_joueurs(tournoi, joueurs_table):
+def unserial_joueurs(clef_tournoi, joueurs_table):
     """Reloaded de la liste des joueurs à partir de la table joueurs"""
     liste_joueurs = []
-    clef_tournoi = tournoi.nom + tournoi.lieu + date.isoformat(tournoi.date_debut)
     for item in joueurs_table:
         if item['clef'] == clef_tournoi:
             joueur = Joueur(
@@ -58,10 +57,9 @@ def serial_matchs(tournoi, matchs_table):
     return
 
 
-def unserial_matchs(tournoi, tour_numero, matchs_table):
+def unserial_matchs(clef_tournoi, tour_numero, matchs_table):
     """Reloaded de la liste des matchs à partir de la table matchs"""
     liste_matchs = []
-    clef_tournoi = tournoi.nom + tournoi.lieu + date.isoformat(tournoi.date_debut)
     for item in matchs_table:
         if item['clef'] == clef_tournoi and item['tour'] == tour_numero:
             match = Match(
@@ -94,17 +92,16 @@ def serial_tours(tournoi, tours_table):
     return
 
 
-def unserial_tours(tournoi, tours_table, matchs_table):
+def unserial_tours(clef_tournoi, tours_table, matchs_table):
     """Reloaded de la liste des tours à partir de la table tours"""
     liste_tours = []
-    clef_tournoi = tournoi.nom + tournoi.lieu + date.isoformat(tournoi.date_debut)
     for item in tours_table:
         if item['clef'] == clef_tournoi:
             if item['date_heure_fin']:
                 fin = datetime.fromisoformat(item['date_heure_fin'])
             else:
                 fin = None
-            liste_matchs = unserial_matchs(tournoi, item['numero'], matchs_table)
+            liste_matchs = unserial_matchs(clef_tournoi, item['numero'], matchs_table)
             tour = Tour(
                 item['numero'],
                 item['nom'],
@@ -136,24 +133,52 @@ def serial_tournoi(tournoi, tournois_table, tours_table, matchs_table):
     serial_matchs(tournoi, matchs_table)
 
 
-def unserial_tournoi(tournoi, tournois_table, tours_table, matchs_table):
+def unserial_tournoi(clef_tournoi, tournois_table, tours_table, matchs_table):
     """Reloaded du tournoi à partir de la table tournois"""
-    tournoi_reloaded = None
-    clef_tournoi = tournoi.nom + tournoi.lieu + date.isoformat(tournoi.date_debut)
+    tournoi = None
     for item in tournois_table:
         if item['clef'] == clef_tournoi:
-            liste_tours = unserial_tours(tournoi, tours_table, matchs_table)
-            tournoi_reloaded = Tournoi(
+            liste_tours = unserial_tours(clef_tournoi, tours_table, matchs_table)
+            tournoi = Tournoi(
                 item['nom'],
                 item['lieu'],
-                datetime.fromisoformat(item['date_debut']),
-                datetime.fromisoformat(item['date_fin']),
+                date.fromisoformat(item['date_debut']),
+                date.fromisoformat(item['date_fin']),
                 item['nb_tour'],
                 liste_tours,
                 item['compteur_temps'],
                 item['description']
             )
-    return tournoi_reloaded
+    return tournoi
+
+
+def serial_menu(liste_lignes, clef_tournoi, menus_table):
+    """Serialisation des lignes du menu et insertion dans la table menus"""
+    query_menus = Query()
+    menus_table.remove(query_menus.cleftournoi == clef_tournoi)
+    for ligne in liste_lignes:
+        serialized_menu = {
+            'cleftournoi': clef_tournoi,
+            'clef': ligne.clef,
+            'texte': ligne.texte,
+            'actif': ligne.actif
+        }
+        menus_table.insert(serialized_menu)
+    return
+
+
+def unserial_menu(clef_tournoi, menus_table):
+    """Reloaded des lignes du menu à partir de la table menus"""
+    liste_lignes = []
+    for item in menus_table:
+        if item['cleftournoi'] == clef_tournoi:
+            ligne = LigneMenu(
+                item['clef'],
+                item['texte'],
+                item['actif']
+            )
+            liste_lignes.append(ligne)
+    return liste_lignes
 
 
 def recherche_tournoi(table_tournois):

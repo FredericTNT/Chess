@@ -3,13 +3,13 @@ from colored import attr
 
 class Color:
     RESET = attr(0)
-    PURPLE = '\033[95m'
-    CYAN = '\033[96m'
-    DARKCYAN = '\033[36m'
-    BLUE = '\033[94m'
+    GREY = '\033[90m'
+    RED = '\033[91m'
     GREEN = '\033[92m'
     YELLOW = '\033[93m'
-    RED = '\033[91m'
+    BLUE = '\033[94m'
+    PURPLE = '\033[95m'
+    CYAN = '\033[96m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
     END = '\033[0m'
@@ -52,12 +52,13 @@ class Menu:
 
     def __str__(self):
         """Générer l'affichage du menu"""
-        page = f"{Color.RESET}{Color.SAUTLIGNE}-------- {self.titre} --------{Color.SAUTLIGNE}"
+        page = Color.RESET
+        page += f"{Color.SAUTLIGNE}-------- {Color.YELLOW}{self.titre}{Color.END} --------{Color.SAUTLIGNE}"
         for ligne in self.liste_lignes:
             if ligne.actif:
-                page += f"{Color.SAUTLIGNE}{Color.GREEN}  {ligne.clef}. {ligne.texte}{Color.END}"
+                page += f"{Color.SAUTLIGNE}{Color.YELLOW}  {ligne.clef}. {Color.END}{ligne.texte}"
             else:
-                page += f"{Color.SAUTLIGNE}  {ligne.clef}. {ligne.texte}"
+                page += f"{Color.SAUTLIGNE}{Color.GREY}  {ligne.clef}. {ligne.texte}{Color.END}"
         if self.etat:
             page += f"{Color.SAUTLIGNE}{Color.SAUTLIGNE}{Color.CYAN}  {self.etat}{Color.END}"
             self.etat = None

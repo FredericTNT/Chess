@@ -4,6 +4,7 @@ from datetime import date
 
 
 def matchs_tournoi(tournoi, liste_joueurs):
+    """Liste des matchs d'un tournoi"""
     page = f"{Color.CYAN}\n-------- Liste des matchs du tournoi de {tournoi.lieu} --------\n{Color.END}"
     for tour in tournoi.liste_tours:
         page += f"\n  Tour {tour.numero} {Color.YELLOW}{tour.nom}{Color.END}"
@@ -21,6 +22,7 @@ def matchs_tournoi(tournoi, liste_joueurs):
 
 
 def tours_tournoi(tournoi):
+    """Liste des tours d'un tournoi"""
     page = f"{Color.CYAN}\n-------- Liste des tours du tournoi de {tournoi.lieu} --------\n{Color.END}"
     for tour in tournoi.liste_tours:
         page += f"\n  Tour {tour.numero} {Color.YELLOW}{tour.nom}{Color.END}" \
@@ -34,6 +36,7 @@ def tours_tournoi(tournoi):
 
 
 def joueurs_tournoi(liste_joueurs, lieu, ordre="elo"):
+    """Liste des joueurs d'un tournoi"""
     page = f"{Color.CYAN}\n-------- Liste des joueurs du tournoi de {lieu} "
     if ordre == "elo":
         page += f"{Color.YELLOW}(ordre classement elo)"

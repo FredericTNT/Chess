@@ -4,7 +4,8 @@ from operator import attrgetter
 class Tournoi:
     """Tournoi"""
 
-    def __init__(self, nom, lieu, date_debut, date_fin=None, nb_tour=4, liste_tours=None, compteur_temps="Blitz", description=""):
+    def __init__(self, nom, lieu, date_debut, date_fin=None, nb_tour=4, liste_tours=None,
+                 compteur_temps="Blitz", description=""):
         self.nom = nom
         self.lieu = lieu
         self.date_debut = date_debut
