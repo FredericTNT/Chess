@@ -5,7 +5,7 @@ class Tournoi:
     """Tournoi"""
 
     def __init__(self, nom, lieu, date_debut, date_fin=None, nb_tour=4, liste_tours=None,
-                 compteur_temps="Blitz", description=""):
+                 compteur_temps="Blitz", description="", clefs_joueurs=None):
         self.nom = nom
         self.lieu = lieu
         self.date_debut = date_debut
@@ -20,6 +20,11 @@ class Tournoi:
             self.liste_tours = []
         self.compteur_temps = compteur_temps
         self.description = description
+        if clefs_joueurs:
+            self.clefs_joueurs = clefs_joueurs
+        else:
+            self.clefs_joueurs = []
+
 
     def enregistrer_tour(self, tour):
         """Enregistrement d'un tour du tournoi"""

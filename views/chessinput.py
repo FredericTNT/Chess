@@ -3,10 +3,12 @@ import random
 from models.joueur import Joueur
 
 
-def joueurs_inscrits(nb_joueurs):
+def joueurs_inscrits(nb_joueurs, tournoi):
     liste_joueurs = []
     for i in range(0, nb_joueurs):
-        liste_joueurs.append(Joueur("TNT", f'Joueur{i}', date(2000, 7, 22), "M", random.randrange(1000, 1800, 100)))
+        joueur = Joueur(f"TNT{tournoi.lieu}", f'Joueur{i}', date(2000, 7, 22), "M", random.randrange(1000, 1800, 100))
+        liste_joueurs.append(joueur)
+        tournoi.clefs_joueurs.append(joueur.nom + joueur.prenom + date.isoformat(joueur.date_naissance))
     return liste_joueurs
 
 

@@ -13,7 +13,9 @@ def main():
     tours_table = db.table('tours')
     matchs_table = db.table('matchs')
     menus_table = db.table('menus')
-    menu_general(NB_JOUEURS, NB_TOURS, joueurs_table, tournois_table, tours_table, matchs_table, menus_table)
+    clefsjoueurs_table = db.table('clefsjoueurs')
+    menu_general(NB_JOUEURS, NB_TOURS,
+                 joueurs_table, tournois_table, tours_table, matchs_table, menus_table, clefsjoueurs_table)
 
 
 # Programme principal tournoi d'échecs
