@@ -1,1 +1,1 @@
-__all__ = ["menu", "joueur", "tournoi", "serialdb"]
+__all__ = ["config", "menu", "joueur", "tournoi", "serialdb"]

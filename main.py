@@ -1,23 +1,15 @@
-from tinydb import TinyDB
 from controllers.menusequence import menu_general
 
+"""
+Paramètres généraux : 
+ - nombre de joueurs (nombre pair pour un appairage correct des matchs)
+ - nombre de tours (au maximum = à nombre de joueurs -1)
+ - génération automatique des joueurs et des résultats des matchs (True/mode test, False/mode exploitation)
+"""
 NB_JOUEURS = 8
 NB_TOURS = 4
+AUTO = True
 
-
-def main():
-    """Initialisation TinyDB et lancement du menu général de l'application"""
-    db = TinyDB('chess_db.json')
-    joueurs_table = db.table('joueurs')
-    tournois_table = db.table('tournois')
-    tours_table = db.table('tours')
-    matchs_table = db.table('matchs')
-    menus_table = db.table('menus')
-    clefsjoueurs_table = db.table('clefsjoueurs')
-    menu_general(NB_JOUEURS, NB_TOURS,
-                 joueurs_table, tournois_table, tours_table, matchs_table, menus_table, clefsjoueurs_table)
-
-
-# Programme principal tournoi d'échecs
+""" Programme principal tournoi d'échecs"""
 if __name__ == '__main__':
-    main()
+    menu_general(NB_JOUEURS, NB_TOURS, AUTO)

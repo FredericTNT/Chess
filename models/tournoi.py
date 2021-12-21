@@ -25,7 +25,6 @@ class Tournoi:
         else:
             self.clefs_joueurs = []
 
-
     def enregistrer_tour(self, tour):
         """Enregistrement d'un tour du tournoi"""
         if tour in self.liste_tours:

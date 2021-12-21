@@ -1,17 +1,17 @@
+from datetime import date, datetime
+from tinydb import Query
 from models.joueur import Joueur
 from models.tournoi import Tournoi, Tour, Match
 from models.menu import LigneMenu
-from datetime import date, datetime
-from tinydb import Query
+import models.config as tb
 
 
-def serial_joueurs(liste_joueurs, joueurs_table):
+def serial_joueurs(liste_joueurs):
     """Serialisation de la liste des joueurs et insertion dans la table joueurs"""
     query_joueurs = Query()
     for joueur in liste_joueurs:
-        joueurs_table.remove((query_joueurs.nom == joueur.nom) &
-                             (query_joueurs.prenom == joueur.prenom) &
-                             (query_joueurs.date_naissance == date.isoformat(joueur.date_naissance)))
+        tb.JOUEURS.remove((query_joueurs.nom == joueur.nom) & (query_joueurs.prenom == joueur.prenom) &
+                          (query_joueurs.date_naissance == date.isoformat(joueur.date_naissance)))
         serialized_joueur = {
             'nom': joueur.nom,
             'prenom': joueur.prenom,
@@ -19,16 +19,16 @@ def serial_joueurs(liste_joueurs, joueurs_table):
             'sexe': joueur.sexe,
             'elo': joueur.elo
         }
-        joueurs_table.insert(serialized_joueur)
+        tb.JOUEURS.insert(serialized_joueur)
     return
 
 
-def unserial_joueurs(clef_tournoi, joueurs_table, clefsjoueurs_table):
+def unserial_joueurs(clef_tournoi):
     """Reloaded de la liste des joueurs à partir de la table joueurs"""
     liste_joueurs = []
-    for clefjoueur in clefsjoueurs_table:
+    for clefjoueur in tb.CLEFSJOUEURS:
         if clefjoueur['clef'] == clef_tournoi:
-            for item in joueurs_table:
+            for item in tb.JOUEURS:
                 if clefjoueur['clef_joueur'] == item['nom'] + item['prenom'] + item['date_naissance']:
                     joueur = Joueur(
                         item['nom'],
@@ -41,34 +41,34 @@ def unserial_joueurs(clef_tournoi, joueurs_table, clefsjoueurs_table):
     return liste_joueurs
 
 
-def serial_clefsjoueurs(tournoi, clefsjoueurs_table):
+def serial_clefsjoueurs(tournoi):
     """Serialisation de la liste des clefs des joueurs et insertion dans la table clefsjoueurs"""
     query_matchs = Query()
     clef_tournoi = tournoi.nom + tournoi.lieu + date.isoformat(tournoi.date_debut)
-    clefsjoueurs_table.remove(query_matchs.clef == clef_tournoi)
+    tb.CLEFSJOUEURS.remove(query_matchs.clef == clef_tournoi)
     for clefjoueur in tournoi.clefs_joueurs:
         serialized_clefjoueur = {
             'clef': clef_tournoi,
             'clef_joueur': clefjoueur
         }
-        clefsjoueurs_table.insert(serialized_clefjoueur)
+        tb.CLEFSJOUEURS.insert(serialized_clefjoueur)
     return
 
 
-def unserial_clefsjoueurs(clef_tournoi, clefsjoueurs_table):
+def unserial_clefsjoueurs(clef_tournoi):
     """Reloaded de la liste des clefs des joueurs à partir de la table clefsjoueurs"""
     clefs_joueurs = []
-    for item in clefsjoueurs_table:
+    for item in tb.CLEFSJOUEURS:
         if item['clef'] == clef_tournoi:
             clefs_joueurs.append(item['clef_joueur'])
     return clefs_joueurs
 
 
-def serial_matchs(tournoi, matchs_table):
+def serial_matchs(tournoi):
     """Serialisation de la liste des matchs et insertion dans la table matchs"""
     query_matchs = Query()
     clef_tournoi = tournoi.nom + tournoi.lieu + date.isoformat(tournoi.date_debut)
-    matchs_table.remove(query_matchs.clef == clef_tournoi)
+    tb.MATCHS.remove(query_matchs.clef == clef_tournoi)
     for tour in tournoi.liste_tours:
         for match in tour.liste_matchs:
             serialized_match = {
@@ -79,14 +79,14 @@ def serial_matchs(tournoi, matchs_table):
                 'noir_indice': match.noir[0],
                 'noir_resultat': match.noir[1]
             }
-            matchs_table.insert(serialized_match)
+            tb.MATCHS.insert(serialized_match)
     return
 
 
-def unserial_matchs(clef_tournoi, tour_numero, matchs_table):
+def unserial_matchs(clef_tournoi, tour_numero):
     """Reloaded de la liste des matchs à partir de la table matchs"""
     liste_matchs = []
-    for item in matchs_table:
+    for item in tb.MATCHS:
         if item['clef'] == clef_tournoi and item['tour'] == tour_numero:
             match = Match(
                 item['blanc_indice'],
@@ -98,11 +98,11 @@ def unserial_matchs(clef_tournoi, tour_numero, matchs_table):
     return liste_matchs
 
 
-def serial_tours(tournoi, tours_table):
+def serial_tours(tournoi):
     """Serialisation de la liste des tours et insertion dans la table tours"""
     query_tours = Query()
     clef_tournoi = tournoi.nom + tournoi.lieu + date.isoformat(tournoi.date_debut)
-    tours_table.remove(query_tours.clef == clef_tournoi)
+    tb.TOURS.remove(query_tours.clef == clef_tournoi)
     for tour in tournoi.liste_tours:
         serialized_tour = {
             'clef': clef_tournoi,
@@ -114,20 +114,20 @@ def serial_tours(tournoi, tours_table):
             serialized_tour['date_heure_fin'] = datetime.isoformat(tour.date_heure_fin)
         else:
             serialized_tour['date_heure_fin'] = None
-        tours_table.insert(serialized_tour)
+        tb.TOURS.insert(serialized_tour)
     return
 
 
-def unserial_tours(clef_tournoi, tours_table, matchs_table):
+def unserial_tours(clef_tournoi):
     """Reloaded de la liste des tours à partir de la table tours"""
     liste_tours = []
-    for item in tours_table:
+    for item in tb.TOURS:
         if item['clef'] == clef_tournoi:
             if item['date_heure_fin']:
                 fin = datetime.fromisoformat(item['date_heure_fin'])
             else:
                 fin = None
-            liste_matchs = unserial_matchs(clef_tournoi, item['numero'], matchs_table)
+            liste_matchs = unserial_matchs(clef_tournoi, item['numero'])
             tour = Tour(
                 item['numero'],
                 item['nom'],
@@ -139,11 +139,11 @@ def unserial_tours(clef_tournoi, tours_table, matchs_table):
     return liste_tours
 
 
-def serial_tournoi(tournoi, tournois_table, tours_table, matchs_table, clefsjoueurs_table):
+def serial_tournoi(tournoi):
     """Serialisation du tournoi et insertion dans la table tournois"""
     query_tournois = Query()
     clef_tournoi = tournoi.nom + tournoi.lieu + date.isoformat(tournoi.date_debut)
-    tournois_table.remove(query_tournois.clef == clef_tournoi)
+    tb.TOURNOIS.remove(query_tournois.clef == clef_tournoi)
     serialized_tournoi = {
         'clef': clef_tournoi,
         'nom': tournoi.nom,
@@ -154,19 +154,19 @@ def serial_tournoi(tournoi, tournois_table, tours_table, matchs_table, clefsjoue
         'compteur_temps': tournoi.compteur_temps,
         'description': tournoi.description
     }
-    tournois_table.insert(serialized_tournoi)
-    serial_tours(tournoi, tours_table)
-    serial_matchs(tournoi, matchs_table)
-    serial_clefsjoueurs(tournoi, clefsjoueurs_table)
+    tb.TOURNOIS.insert(serialized_tournoi)
+    serial_tours(tournoi)
+    serial_matchs(tournoi)
+    serial_clefsjoueurs(tournoi)
 
 
-def unserial_tournoi(clef_tournoi, tournois_table, tours_table, matchs_table, clefsjoueurs_table):
+def unserial_tournoi(clef_tournoi):
     """Reloaded du tournoi à partir de la table tournois"""
     tournoi = None
-    for item in tournois_table:
+    for item in tb.TOURNOIS:
         if item['clef'] == clef_tournoi:
-            liste_tours = unserial_tours(clef_tournoi, tours_table, matchs_table)
-            clefs_joueurs = unserial_clefsjoueurs(clef_tournoi, clefsjoueurs_table)
+            liste_tours = unserial_tours(clef_tournoi)
+            clefs_joueurs = unserial_clefsjoueurs(clef_tournoi)
             tournoi = Tournoi(
                 item['nom'],
                 item['lieu'],
@@ -181,10 +181,10 @@ def unserial_tournoi(clef_tournoi, tournois_table, tours_table, matchs_table, cl
     return tournoi
 
 
-def serial_menu(liste_lignes, clef_tournoi, menus_table):
+def serial_menu(liste_lignes, clef_tournoi):
     """Serialisation des lignes du menu et insertion dans la table menus"""
     query_menus = Query()
-    menus_table.remove(query_menus.cleftournoi == clef_tournoi)
+    tb.MENUS.remove(query_menus.cleftournoi == clef_tournoi)
     for ligne in liste_lignes:
         serialized_menu = {
             'cleftournoi': clef_tournoi,
@@ -192,14 +192,14 @@ def serial_menu(liste_lignes, clef_tournoi, menus_table):
             'texte': ligne.texte,
             'actif': ligne.actif
         }
-        menus_table.insert(serialized_menu)
+        tb.MENUS.insert(serialized_menu)
     return
 
 
-def unserial_menu(clef_tournoi, menus_table):
+def unserial_menu(clef_tournoi):
     """Reloaded des lignes du menu à partir de la table menus"""
     liste_lignes = []
-    for item in menus_table:
+    for item in tb.MENUS:
         if item['cleftournoi'] == clef_tournoi:
             ligne = LigneMenu(
                 item['clef'],

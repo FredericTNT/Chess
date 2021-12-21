@@ -1,15 +1,14 @@
+from datetime import datetime, date
+from models.tournoi import Tour
 from models.serialdb import serial_joueurs, unserial_joueurs, serial_tournoi, unserial_tournoi
+from models.menu import Menu, LigneMenu
 from models.serialdb import serial_menu, unserial_menu
 from views.listestournoi import matchs_tournoi, tours_tournoi, joueurs_tournoi
-from models.menu import Menu, LigneMenu
-from views.chessinput import joueurs_inscrits, saisie_resultats
-from models.tournoi import Tournoi, Tour
 from views.listeschess import acteurs_tournois, chess_tournois
-from datetime import datetime, date
+from views.chessinput import saisie_tournoi, select_tournoi, joueurs_inscrits, saisie_resultats
 
 
-def menu_general(nb_joueurs, nb_tours,
-                 joueurs_table, tournois_table, tours_table, matchs_table, menus_table, clefsjoueurs_table):
+def menu_general(nb_joueurs, nb_tours, auto=False):
     """Séquencement du menu général"""
     menu = Menu("Tournoi d'échecs Menu général")
     menu.ajouter_ligne(LigneMenu("1", "Créer un nouveau tournoi", True))
@@ -23,34 +22,35 @@ def menu_general(nb_joueurs, nb_tours,
         menu.choix_ligne()
         match menu.choix:
             case "1":
-                tournoi = Tournoi("Chess", "Versailles", date.today(), nb_tour=nb_tours)
+                tournoi = saisie_tournoi(nb_tours)
                 liste_joueurs = []
-                menu_tournoi(tournoi, liste_joueurs, nb_joueurs,
-                             joueurs_table, tournois_table, tours_table, matchs_table, menus_table, clefsjoueurs_table)
+                menu_tournoi(tournoi, liste_joueurs, nb_joueurs, auto)
                 menu.etat = f"Le tournoi {tournoi.nom} de {tournoi.lieu} est sauvegardé !"
             case "2":
-                clef_tournoi = "Chess" + "Versailles" + date.isoformat(date.today())
-                tournoi = unserial_tournoi(clef_tournoi, tournois_table, tours_table, matchs_table, clefsjoueurs_table)
-                liste_joueurs = unserial_joueurs(clef_tournoi, joueurs_table, clefsjoueurs_table)
-                menu_tournoi(tournoi, liste_joueurs, nb_joueurs,
-                             joueurs_table, tournois_table, tours_table, matchs_table, menus_table, clefsjoueurs_table)
-                menu.etat = f"Le tournoi {tournoi.nom} de {tournoi.lieu} est sauvegardé !"
+                clef_tournoi = select_tournoi()
+                if clef_tournoi:
+                    tournoi = unserial_tournoi(clef_tournoi)
+                    liste_joueurs = unserial_joueurs(clef_tournoi)
+                    menu_tournoi(tournoi, liste_joueurs, nb_joueurs, auto)
+                    menu.etat = f"Le tournoi {tournoi.nom} de {tournoi.lieu} est sauvegardé !"
+                else:
+                    menu.etat = f"Aucun tournoi n'est enregistré, veuillez créer un tournoi !"
             case "3":
-                print(chess_tournois(tournois_table))
+                print(chess_tournois())
             case "4":
-                print(acteurs_tournois(joueurs_table, "alpha"))
+                print(acteurs_tournois("alpha"))
             case "5":
-                print(acteurs_tournois(joueurs_table, "elo"))
+                print(acteurs_tournois("elo"))
             case "9":
                 print("\n  Hello world")
     return
 
 
-def contexte_menu_tournoi(tournoi, menus_table):
+def contexte_menu_tournoi(tournoi):
     """Génération contextualisée du menu tournoi"""
     menu = Menu(f'Tournoi {tournoi.nom} de {tournoi.lieu} le {tournoi.date_debut}')
     clef_tournoi = tournoi.nom + tournoi.lieu + date.isoformat(tournoi.date_debut)
-    liste_lignes = unserial_menu(clef_tournoi, menus_table)
+    liste_lignes = unserial_menu(clef_tournoi)
     if len(liste_lignes) == 0:
         menu.ajouter_ligne(LigneMenu("1", "Inscrire les joueurs", True))
         menu.ajouter_ligne(LigneMenu("2", "Générer les matchs du tour 1", False))
@@ -67,17 +67,15 @@ def contexte_menu_tournoi(tournoi, menus_table):
     return menu
 
 
-def menu_tournoi(tournoi, liste_joueurs,
-                 nb_joueurs, joueurs_table, tournois_table, tours_table, matchs_table, menus_table, clefsjoueurs_table):
+def menu_tournoi(tournoi, liste_joueurs, nb_joueurs, auto=False):
     """Séquencement du menu tournoi"""
-    menu = contexte_menu_tournoi(tournoi, menus_table)
-    clef_tournoi = tournoi.nom + tournoi.lieu + date.isoformat(tournoi.date_debut)
+    menu = contexte_menu_tournoi(tournoi)
     while menu.choix != "9":
         print(menu)
         menu.choix_ligne()
         match menu.choix:
             case "1":
-                liste_joueurs = joueurs_inscrits(nb_joueurs, tournoi)
+                liste_joueurs = joueurs_inscrits(nb_joueurs, tournoi, auto)
                 menu.etat = "Les joueurs sont prêts !"
                 menu.liste_lignes[menu.indice("1")].actif = False
                 menu.liste_lignes[menu.indice("2")].actif = True
@@ -100,7 +98,7 @@ def menu_tournoi(tournoi, liste_joueurs,
             case "3":
                 nb_tour = len(tournoi.liste_tours)
                 tour = tournoi.liste_tours[nb_tour - 1]
-                saisie_resultats(tour, int(nb_joueurs / 2))
+                saisie_resultats(tour, liste_joueurs, int(nb_joueurs / 2), auto)
                 tour.terminer(datetime.today())
                 tournoi.enregistrer_tour(tour)
                 menu.liste_lignes[menu.indice("3")].actif = False
@@ -120,7 +118,8 @@ def menu_tournoi(tournoi, liste_joueurs,
             case "8":
                 print(tours_tournoi(tournoi))
             case "9":
-                serial_tournoi(tournoi, tournois_table, tours_table, matchs_table, clefsjoueurs_table)
-                serial_joueurs(liste_joueurs, joueurs_table)
-                serial_menu(menu.liste_lignes, clef_tournoi, menus_table)
+                serial_tournoi(tournoi)
+                serial_joueurs(liste_joueurs)
+                clef_tournoi = tournoi.nom + tournoi.lieu + date.isoformat(tournoi.date_debut)
+                serial_menu(menu.liste_lignes, clef_tournoi)
     return
