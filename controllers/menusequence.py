@@ -1,11 +1,12 @@
 from datetime import datetime, date
 from models.tournoi import Tour
 from models.serialdb import serial_joueurs, unserial_joueurs, serial_tournoi, unserial_tournoi
-from models.menu import Menu, LigneMenu
+from models.menu import Menu, LigneMenu, Color
 from models.serialdb import serial_menu, unserial_menu
 from views.listestournoi import matchs_tournoi, tours_tournoi, joueurs_tournoi
 from views.listeschess import acteurs_tournois, chess_tournois
-from views.chessinput import saisie_tournoi, select_tournoi, joueurs_inscrits, saisie_resultats
+from views.chessinput import saisie_tournoi, select_tournoi, select_joueur, joueurs_inscrits
+from views.chessinput import saisie_resultats, modifier_elo
 
 
 def menu_general(nb_joueurs, nb_tours, auto=False):
@@ -16,6 +17,7 @@ def menu_general(nb_joueurs, nb_tours, auto=False):
     menu.ajouter_ligne(LigneMenu("3", "Liste de tous les tournois", True))
     menu.ajouter_ligne(LigneMenu("4", "Liste de tous les acteurs (par ordre alphabétique)", True))
     menu.ajouter_ligne(LigneMenu("5", "Liste de tous les acteurs (par classement elo)", True))
+    menu.ajouter_ligne(LigneMenu("6", "Modifier le classement elo d'un joueur", True))
     menu.ajouter_ligne(LigneMenu("9", "Quitter l'application", True))
     while menu.choix != "9":
         print(menu)
@@ -41,6 +43,14 @@ def menu_general(nb_joueurs, nb_tours, auto=False):
                 print(acteurs_tournois("alpha"))
             case "5":
                 print(acteurs_tournois("elo"))
+            case "6":
+                print(f"{Color.GREEN}\n-------- Modification du classement elo d'un joueur --------{Color.END}")
+                selection_joueur = select_joueur()
+                if len(selection_joueur) == 0:
+                    print(f"{Color.SAUTLIGNE}{Color.YELLOW}  Désolé! Aucun résultat à votre sélection"
+                          f"{Color.END}{Color.SAUTLIGNE}")
+                else:
+                    modifier_elo(selection_joueur[0])
             case "9":
                 print("\n  Hello world")
     return
@@ -55,11 +65,10 @@ def contexte_menu_tournoi(tournoi):
         menu.ajouter_ligne(LigneMenu("1", "Inscrire les joueurs", True))
         menu.ajouter_ligne(LigneMenu("2", "Générer les matchs du tour 1", False))
         menu.ajouter_ligne(LigneMenu("3", "Saisir les résultats du tour 1", False))
-        menu.ajouter_ligne(LigneMenu("4", "Modifier le classement elo d'un joueur", False))
-        menu.ajouter_ligne(LigneMenu("5", "Liste de tous les joueurs du tournoi (par ordre alphabétique)", False))
-        menu.ajouter_ligne(LigneMenu("6", "Liste de tous les joueurs du tournoi (par classement elo)", False))
-        menu.ajouter_ligne(LigneMenu("7", "Liste de tous les matchs du tournoi", False))
-        menu.ajouter_ligne(LigneMenu("8", "Liste de tous les tours du tournoi", False))
+        menu.ajouter_ligne(LigneMenu("4", "Liste de tous les joueurs du tournoi (par ordre alphabétique)", False))
+        menu.ajouter_ligne(LigneMenu("5", "Liste de tous les joueurs du tournoi (par classement elo)", False))
+        menu.ajouter_ligne(LigneMenu("6", "Liste de tous les matchs du tournoi", False))
+        menu.ajouter_ligne(LigneMenu("7", "Liste de tous les tours du tournoi", False))
         menu.ajouter_ligne(LigneMenu("9", "Retour au menu général & sauvegarde du tournoi", True))
     else:
         for ligne in liste_lignes:
@@ -79,8 +88,8 @@ def menu_tournoi(tournoi, liste_joueurs, nb_joueurs, auto=False):
                 menu.etat = "Les joueurs sont prêts !"
                 menu.liste_lignes[menu.indice("1")].actif = False
                 menu.liste_lignes[menu.indice("2")].actif = True
+                menu.liste_lignes[menu.indice("4")].actif = True
                 menu.liste_lignes[menu.indice("5")].actif = True
-                menu.liste_lignes[menu.indice("6")].actif = True
             case "2":
                 nb_tour = len(tournoi.liste_tours) + 1
                 tour = Tour(nb_tour)
@@ -89,8 +98,8 @@ def menu_tournoi(tournoi, liste_joueurs, nb_joueurs, auto=False):
                 menu.liste_lignes[menu.indice("3")].actif = True
                 if tour.numero == 1:
                     tour.organiser_premier_tour(liste_joueurs)
+                    menu.liste_lignes[menu.indice("6")].actif = True
                     menu.liste_lignes[menu.indice("7")].actif = True
-                    menu.liste_lignes[menu.indice("8")].actif = True
                 else:
                     tour.organiser_tour_suivant(tournoi.somme_points(), liste_joueurs, tournoi)
                 tournoi.enregistrer_tour(tour)
@@ -108,14 +117,12 @@ def menu_tournoi(tournoi, liste_joueurs, nb_joueurs, auto=False):
                     menu.liste_lignes[menu.indice("2")].texte = f"Générer les matchs du tour {nb_tour + 1}"
                     menu.liste_lignes[menu.indice("3")].texte = f"Saisir les résultats du tour {nb_tour + 1}"
             case "4":
-                pass
-            case "5":
                 print(joueurs_tournoi(liste_joueurs, tournoi.lieu, "alpha"))
-            case "6":
+            case "5":
                 print(joueurs_tournoi(liste_joueurs, tournoi.lieu, "elo"))
-            case "7":
+            case "6":
                 print(matchs_tournoi(tournoi, liste_joueurs))
-            case "8":
+            case "7":
                 print(tours_tournoi(tournoi))
             case "9":
                 serial_tournoi(tournoi)

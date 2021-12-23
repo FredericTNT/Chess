@@ -8,7 +8,7 @@ Paramètres généraux :
 """
 NB_JOUEURS = 8
 NB_TOURS = 4
-AUTO = True
+AUTO = False
 
 """ Programme principal tournoi d'échecs"""
 if __name__ == '__main__':

@@ -46,8 +46,9 @@ def joueurs_tournoi(liste_joueurs, lieu, ordre="elo"):
         joueurs_tries = sorted(liste_joueurs, key=attrgetter('nom', 'prenom'), reverse=False)
     page += f"{Color.CYAN} --------\n{Color.END}"
     for joueur in joueurs_tries:
-        identite = '{:<15} {:<20}'.format(joueur.prenom, joueur.nom)
         ans = '{:>3}'.format(date.today().year - joueur.date_naissance.year)
-        page += f"\n  {identite} {ans} ans {joueur.elo} elo"
+        page += f"\n  {joueur.prenom.ljust(15)[0:14]} {joueur.nom.ljust(20)[0:19]} {ans} ans {joueur.elo} elo"
+        if len(joueur.nom) > 20 or len(joueur.prenom) > 15:
+            page += f" {joueur.prenom} {joueur.nom}"
     page += "\n"
     return page
