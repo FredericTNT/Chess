@@ -3,7 +3,7 @@ from models.tournoi import Tour
 from models.serialdb import serial_joueurs, unserial_joueurs, serial_tournoi, unserial_tournoi
 from models.menu import Menu, LigneMenu, Color
 from models.serialdb import serial_menu, unserial_menu
-from views.listestournoi import matchs_tournoi, tours_tournoi, joueurs_tournoi
+from views.listestournoi import matchs_tournoi, tours_tournoi, joueurs_tournoi, resultats_tournoi
 from views.listeschess import acteurs_tournois, chess_tournois
 from views.chessinput import saisie_tournoi, select_tournoi, select_joueur, joueurs_inscrits
 from views.chessinput import saisie_resultats, modifier_elo
@@ -69,6 +69,7 @@ def contexte_menu_tournoi(tournoi):
         menu.ajouter_ligne(LigneMenu("5", "Liste de tous les joueurs du tournoi (par classement elo)", False))
         menu.ajouter_ligne(LigneMenu("6", "Liste de tous les matchs du tournoi", False))
         menu.ajouter_ligne(LigneMenu("7", "Liste de tous les tours du tournoi", False))
+        menu.ajouter_ligne(LigneMenu("8", "Classement du tournoi", False))
         menu.ajouter_ligne(LigneMenu("9", "Retour au menu général & sauvegarde du tournoi", True))
     else:
         for ligne in liste_lignes:
@@ -110,6 +111,7 @@ def menu_tournoi(tournoi, liste_joueurs, nb_joueurs, auto=False):
                 saisie_resultats(tour, liste_joueurs, int(nb_joueurs / 2), auto)
                 tour.terminer(datetime.today())
                 tournoi.enregistrer_tour(tour)
+                menu.liste_lignes[menu.indice("8")].actif = True
                 menu.liste_lignes[menu.indice("3")].actif = False
                 menu.etat = f"Les résultats du {tour.nom} sont saisis !"
                 if nb_tour < tournoi.nb_tour:
@@ -124,6 +126,8 @@ def menu_tournoi(tournoi, liste_joueurs, nb_joueurs, auto=False):
                 print(matchs_tournoi(tournoi, liste_joueurs))
             case "7":
                 print(tours_tournoi(tournoi))
+            case "8":
+                print(resultats_tournoi(tournoi, liste_joueurs))
             case "9":
                 serial_tournoi(tournoi)
                 serial_joueurs(liste_joueurs)

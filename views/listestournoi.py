@@ -1,5 +1,5 @@
 from models.menu import Color
-from operator import attrgetter
+from operator import attrgetter, itemgetter
 from datetime import date
 
 
@@ -50,5 +50,18 @@ def joueurs_tournoi(liste_joueurs, lieu, ordre="elo"):
         page += f"\n  {joueur.prenom.ljust(15)[0:14]} {joueur.nom.ljust(20)[0:19]} {ans} ans {joueur.elo} elo"
         if len(joueur.nom) > 20 or len(joueur.prenom) > 15:
             page += f" {joueur.prenom} {joueur.nom}"
+    page += "\n"
+    return page
+
+
+def resultats_tournoi(tournoi, liste_joueurs):
+    """Affichage des résultats du tournoi par ordre décroissant des points"""
+    page = f"{Color.CYAN}\n-------- Résutats du tournoi de {tournoi.lieu} --------\n{Color.END}"
+    resultats = sorted(tournoi.somme_points().items(), key=itemgetter(1), reverse=True)
+    rang = 1
+    for joueur in resultats:
+        page += f"\n  {Color.CYAN}{rang} - {Color.END}" \
+                f"{joueur[1]} point tournoi {liste_joueurs[joueur[0]].prenom} {liste_joueurs[joueur[0]].nom}"
+        rang += 1
     page += "\n"
     return page
