@@ -1,12 +1,14 @@
 from datetime import datetime, date
-from models.tournoi import Tour
+import models.config as tb
+from models.tournoi import Tournoi, Tour
+from models.joueur import Joueur
 from models.serialdb import serial_joueurs, unserial_joueurs, serial_tournoi, unserial_tournoi
-from models.menu import Menu, LigneMenu, Color
+from models.menu import Menu, LigneMenu
 from models.serialdb import serial_menu, unserial_menu
 from views.listestournoi import matchs_tournoi, tours_tournoi, joueurs_tournoi, resultats_tournoi
 from views.listeschess import acteurs_tournois, chess_tournois
 from views.chessinput import saisie_tournoi, select_tournoi, select_joueur, joueurs_inscrits
-from views.chessinput import saisie_resultats, modifier_elo
+from views.chessinput import saisie_resultats, modifier_elo, Color
 
 
 def menu_general(nb_joueurs, nb_tours, auto=False):
@@ -24,12 +26,14 @@ def menu_general(nb_joueurs, nb_tours, auto=False):
         menu.choix_ligne()
         match menu.choix:
             case "1":
-                tournoi = saisie_tournoi(nb_tours)
+                arg_tournoi = saisie_tournoi()
+                tournoi = Tournoi(arg_tournoi[0], arg_tournoi[1], date.today(), nb_tour=nb_tours,
+                                  compteur_temps=arg_tournoi[2], description=arg_tournoi[3])
                 liste_joueurs = []
                 menu_tournoi(tournoi, liste_joueurs, nb_joueurs, auto)
                 menu.etat = f"Le tournoi {tournoi.nom} de {tournoi.lieu} est sauvegardé !"
             case "2":
-                clef_tournoi = select_tournoi()
+                clef_tournoi = select_tournoi(tb.TOURNOIS)
                 if clef_tournoi:
                     tournoi = unserial_tournoi(clef_tournoi)
                     liste_joueurs = unserial_joueurs(clef_tournoi)
@@ -38,21 +42,22 @@ def menu_general(nb_joueurs, nb_tours, auto=False):
                 else:
                     menu.etat = f"Aucun tournoi n'est enregistré, veuillez créer un tournoi !"
             case "3":
-                print(chess_tournois())
+                print(chess_tournois(tb.TOURNOIS))
             case "4":
-                print(acteurs_tournois("alpha"))
+                print(acteurs_tournois(tb.JOUEURS, "alpha"))
             case "5":
-                print(acteurs_tournois("elo"))
+                print(acteurs_tournois(tb.JOUEURS, "elo"))
             case "6":
-                print(f"{Color.GREEN}\n-------- Modification du classement elo d'un joueur --------{Color.END}")
-                selection_joueur = select_joueur()
+                print(f"{Color.SAUTLIGNE}{Color.GREEN}-------- Modification du classement elo d'un joueur "
+                      f"--------{Color.END}")
+                selection_joueur = select_joueur(tb.JOUEURS)
                 if len(selection_joueur) == 0:
                     print(f"{Color.SAUTLIGNE}{Color.YELLOW}  Désolé! Aucun résultat à votre sélection"
                           f"{Color.END}{Color.SAUTLIGNE}")
                 else:
-                    modifier_elo(selection_joueur[0])
+                    modifier_elo(selection_joueur[0], tb.JOUEURS)
             case "9":
-                print("\n  Hello world")
+                print(f"{Color.SAUTLIGNE}  Hello world")
     return
 
 
@@ -85,7 +90,11 @@ def menu_tournoi(tournoi, liste_joueurs, nb_joueurs, auto=False):
         menu.choix_ligne()
         match menu.choix:
             case "1":
-                liste_joueurs = joueurs_inscrits(nb_joueurs, tournoi, auto)
+                arguments_joueurs = joueurs_inscrits(nb_joueurs, tournoi.lieu, tournoi.nom, auto)
+                for arguments in arguments_joueurs:
+                    joueur = Joueur(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4])
+                    liste_joueurs.append(joueur)
+                    tournoi.clefs_joueurs.append(joueur.nom + joueur.prenom + date.isoformat(joueur.date_naissance))
                 menu.etat = "Les joueurs sont prêts !"
                 menu.liste_lignes[menu.indice("1")].actif = False
                 menu.liste_lignes[menu.indice("2")].actif = True

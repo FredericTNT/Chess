@@ -1,19 +1,12 @@
 from colored import attr
 
-
-class Color:
-    RESET = attr(0)
-    GREY = '\033[90m'
-    RED = '\033[91m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    BLUE = '\033[94m'
-    PURPLE = '\033[95m'
-    CYAN = '\033[96m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    END = '\033[0m'
-    SAUTLIGNE = '\n'
+RESET = attr(0)
+GREY = '\033[90m'
+YELLOW = '\033[93m'
+CYAN = '\033[96m'
+BOLD = '\033[1m'
+END = '\033[0m'
+SAUTLIGNE = '\n'
 
 
 class Menu:
@@ -35,11 +28,11 @@ class Menu:
         for ligne in self.liste_lignes:
             if ligne.actif:
                 liste_controle.append(ligne.clef)
-        saisie = input(Color.BOLD + "  Votre choix ? " + Color.END)
+        saisie = input(BOLD + "  Votre choix ? " + END)
         while saisie not in liste_controle:
-            print(f"{Color.SAUTLIGNE}{Color.YELLOW}  Désolé! Votre choix ne correspond à aucune option valide"
-                  f"{Color.END}{Color.SAUTLIGNE}")
-            saisie = input(Color.BOLD + "  Votre choix ? " + Color.END)
+            print(f"{SAUTLIGNE}{YELLOW}  Désolé! Votre choix ne correspond à aucune option valide"
+                  f"{END}{SAUTLIGNE}")
+            saisie = input(BOLD + "  Votre choix ? " + END)
         self.choix = saisie
 
     def indice(self, clef):
@@ -52,17 +45,17 @@ class Menu:
 
     def __str__(self):
         """Générer l'affichage du menu"""
-        page = Color.RESET
-        page += f"{Color.SAUTLIGNE}-------- {Color.YELLOW}{self.titre}{Color.END} --------{Color.SAUTLIGNE}"
+        page = RESET
+        page += f"{SAUTLIGNE}-------- {YELLOW}{self.titre}{END} --------{SAUTLIGNE}"
         for ligne in self.liste_lignes:
             if ligne.actif:
-                page += f"{Color.SAUTLIGNE}{Color.YELLOW}  {ligne.clef}. {Color.END}{ligne.texte}"
+                page += f"{SAUTLIGNE}{YELLOW}  {ligne.clef}. {END}{ligne.texte}"
             else:
-                page += f"{Color.SAUTLIGNE}{Color.GREY}  {ligne.clef}. {ligne.texte}{Color.END}"
+                page += f"{SAUTLIGNE}{GREY}  {ligne.clef}. {ligne.texte}{END}"
         if self.etat:
-            page += f"{Color.SAUTLIGNE}{Color.SAUTLIGNE}{Color.CYAN}  {self.etat}{Color.END}"
+            page += f"{SAUTLIGNE}{SAUTLIGNE}{CYAN}  {self.etat}{END}"
             self.etat = None
-        page += Color.SAUTLIGNE
+        page += SAUTLIGNE
         return page
 
 
