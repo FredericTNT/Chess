@@ -10,13 +10,13 @@ def matchs_tournoi(tournoi, liste_joueurs):
     for tour in tournoi.liste_tours:
         page += f"{Color.SAUTLIGNE}  Tour {tour.numero} {Color.YELLOW}{tour.nom}{Color.END}"
         for match in tour.liste_matchs:
-            joueur_blanc = '{:<15} {:<20}'.format(liste_joueurs[match.blanc[0]].prenom,
-                                                  liste_joueurs[match.blanc[0]].nom)
-            joueur_noir = '{:<15} {:<20}'.format(liste_joueurs[match.noir[0]].prenom,
-                                                 liste_joueurs[match.noir[0]].nom)
-            page += f"{Color.SAUTLIGNE}    {joueur_blanc} {liste_joueurs[match.blanc[0]].elo} elo " \
+            joueur_blanc = f'{liste_joueurs[match.blanc[0]].prenom.ljust(15)[0:14]} ' \
+                           f'{liste_joueurs[match.blanc[0]].nom.ljust(20)[0:19]}'
+            joueur_noir = f'{liste_joueurs[match.noir[0]].prenom.ljust(15)[0:14]} ' \
+                          f'{liste_joueurs[match.noir[0]].nom.ljust(20)[0:19]}'
+            page += f"{Color.SAUTLIGNE}    {joueur_blanc} {str(liste_joueurs[match.blanc[0]].elo).rjust(4)} elo " \
                     f"- Résultat [{match.blanc[1]}] {Color.YELLOW}vs{Color.END} " \
-                    f"{joueur_noir} {liste_joueurs[match.noir[0]].elo} elo " \
+                    f"{joueur_noir} {str(liste_joueurs[match.noir[0]].elo).rjust(4)} elo " \
                     f"- Résultat [{match.noir[1]}]"
         page += Color.SAUTLIGNE
     return page
@@ -50,7 +50,7 @@ def joueurs_tournoi(liste_joueurs, lieu, ordre="elo"):
     for joueur in joueurs_tries:
         ans = '{:>3}'.format(date.today().year - joueur.date_naissance.year)
         page += f"{Color.SAUTLIGNE}  {joueur.prenom.ljust(15)[0:14]} {joueur.nom.ljust(20)[0:19]} {ans} ans " \
-                f"{joueur.elo} elo"
+                f"{str(joueur.elo).rjust(4)} elo"
         if len(joueur.nom) > 20 or len(joueur.prenom) > 15:
             page += f" {joueur.prenom} {joueur.nom}"
     page += Color.SAUTLIGNE

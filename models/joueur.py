@@ -16,5 +16,12 @@ class Joueur:
         """Retourner l'index du joueur dans la liste des joueurs"""
         return liste_joueurs.index(self)
 
+    def doublon(self, liste_joueurs):
+        """Vérifier si le joueur existe dans la liste des joueurs (même nom, prénom et date de naissance)"""
+        for j in liste_joueurs:
+            if self.nom == j.nom and self.prenom == j.prenom and self.date_naissance == j.date_naissance:
+                return True
+        return False
+
     def __str__(self):
         return f'{self.prenom} {self.nom} classement {self.elo} elo'

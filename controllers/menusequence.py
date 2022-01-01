@@ -1,14 +1,16 @@
 from datetime import datetime, date
+import random
 import models.config as tb
 from models.tournoi import Tournoi, Tour
 from models.joueur import Joueur
-from models.serialdb import serial_joueurs, unserial_joueurs, serial_tournoi, unserial_tournoi
+from models.serialdb import serial_joueurs, unserial_joueurs, update_elo, serial_tournoi, unserial_tournoi
 from models.menu import Menu, LigneMenu
 from models.serialdb import serial_menu, unserial_menu
 from views.listestournoi import matchs_tournoi, tours_tournoi, joueurs_tournoi, resultats_tournoi
 from views.listeschess import acteurs_tournois, chess_tournois
-from views.chessinput import saisie_tournoi, select_tournoi, select_joueur, joueurs_inscrits
-from views.chessinput import saisie_resultats, modifier_elo, Color
+from views.chessinput import select_tournoi, select_joueur
+from views.chessinput import Color, show_titre, show_choix_invalide, show_doublon_joueur, show_match, show_elo
+from views.chessinput import prompt_champ, saisie_date_naissance, saisie_elo
 
 
 def menu_general(nb_joueurs, nb_tours, auto=False):
@@ -26,9 +28,17 @@ def menu_general(nb_joueurs, nb_tours, auto=False):
         menu.choix_ligne()
         match menu.choix:
             case "1":
-                arg_tournoi = saisie_tournoi()
-                tournoi = Tournoi(arg_tournoi[0], arg_tournoi[1], date.today(), nb_tour=nb_tours,
-                                  compteur_temps=arg_tournoi[2], description=arg_tournoi[3])
+                show_titre("Enregistrement du tournoi")
+                confirme = False
+                while not confirme:
+                    nom = prompt_champ("Nom du tournoi")
+                    lieu = prompt_champ("Lieu du tournoi")
+                    controle_temps = {'B': 'Bullet', 'Z': 'Blitz', 'R': 'Coup Rapide'}
+                    compteur_temps = controle_temps[prompt_champ("Contrôle du temps", controle_temps)]
+                    description = prompt_champ("Commentaires du directeur du tournoi")
+                    confirme = (prompt_champ("\nConfirmez-vous la saisie", {'O': 'Oui', 'N': 'Non'}) == 'O')
+                tournoi = Tournoi(nom, lieu, date.today(), nb_tour=nb_tours, compteur_temps=compteur_temps,
+                                  description=description)
                 liste_joueurs = []
                 menu_tournoi(tournoi, liste_joueurs, nb_joueurs, auto)
                 menu.etat = f"Le tournoi {tournoi.nom} de {tournoi.lieu} est sauvegardé !"
@@ -48,14 +58,15 @@ def menu_general(nb_joueurs, nb_tours, auto=False):
             case "5":
                 print(acteurs_tournois(tb.JOUEURS, "elo"))
             case "6":
-                print(f"{Color.SAUTLIGNE}{Color.GREEN}-------- Modification du classement elo d'un joueur "
-                      f"--------{Color.END}")
+                show_titre("Modification du classement elo d'un joueur")
                 selection_joueur = select_joueur(tb.JOUEURS)
                 if len(selection_joueur) == 0:
-                    print(f"{Color.SAUTLIGNE}{Color.YELLOW}  Désolé! Aucun résultat à votre sélection"
-                          f"{Color.END}{Color.SAUTLIGNE}")
+                    show_choix_invalide()
                 else:
-                    modifier_elo(selection_joueur[0], tb.JOUEURS)
+                    show_elo(selection_joueur[0], selection_joueur[0]['elo'])
+                    elo = saisie_elo()
+                    update_elo(selection_joueur[0], elo)
+                    show_elo(selection_joueur[0], elo)
             case "9":
                 print(f"{Color.SAUTLIGNE}  Hello world")
     return
@@ -90,9 +101,25 @@ def menu_tournoi(tournoi, liste_joueurs, nb_joueurs, auto=False):
         menu.choix_ligne()
         match menu.choix:
             case "1":
-                arguments_joueurs = joueurs_inscrits(nb_joueurs, tournoi.lieu, tournoi.nom, auto)
-                for arguments in arguments_joueurs:
-                    joueur = Joueur(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4])
+                show_titre(f"Inscription des joueurs du tournoi {tournoi.nom} de {tournoi.lieu}")
+                for i in range(0, nb_joueurs):
+                    if auto:
+                        joueur = Joueur(f"TNT{tournoi.lieu}", f'Joueur{i}', date(2000, 7, 22), "M",
+                                        random.randrange(1000, 1800, 100))
+                    else:
+                        joueur_inscrit = False
+                        while not joueur_inscrit:
+                            nom = prompt_champ("Nom de famille")
+                            prenom = prompt_champ("Prénom")
+                            date_naissance = saisie_date_naissance()
+                            sexe = prompt_champ("Sexe", {'M': 'Masculin', 'F': 'Féminin'})
+                            elo = saisie_elo()
+                            joueur = Joueur(nom, prenom, date_naissance, sexe, elo)
+                            if joueur.doublon(liste_joueurs):
+                                show_doublon_joueur()
+                            else:
+                                joueur_inscrit = True
+                                print("")
                     liste_joueurs.append(joueur)
                     tournoi.clefs_joueurs.append(joueur.nom + joueur.prenom + date.isoformat(joueur.date_naissance))
                 menu.etat = "Les joueurs sont prêts !"
@@ -117,7 +144,16 @@ def menu_tournoi(tournoi, liste_joueurs, nb_joueurs, auto=False):
             case "3":
                 nb_tour = len(tournoi.liste_tours)
                 tour = tournoi.liste_tours[nb_tour - 1]
-                saisie_resultats(tour, liste_joueurs, int(nb_joueurs / 2), auto)
+                if auto:
+                    for i in range(0, int(nb_joueurs / 2)):
+                        tour.liste_matchs[i].resultat(random.choice(['G', 'P', 'N']))
+                else:
+                    show_titre(f"Saisie des résultats des matchs du tour {tour.numero}")
+                    for match in tour.liste_matchs:
+                        show_match(match, liste_joueurs)
+                        saisie = prompt_champ(f"Résultat du match {tour.liste_matchs.index(match) + 1}",
+                                              {'G': 'Gagné', 'P': 'Perdu', 'N': 'Nul'})
+                        match.resultat(saisie)
                 tour.terminer(datetime.today())
                 tournoi.enregistrer_tour(tour)
                 menu.liste_lignes[menu.indice("8")].actif = True

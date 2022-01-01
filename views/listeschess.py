@@ -35,7 +35,7 @@ def acteurs_tournois(tb_joueurs, ordre="elo"):
         for acteur in acteurs_tries:
             ans = '{:>3}'.format(date.today().year - date.fromisoformat(acteur['date_naissance']).year)
             page += f"{Color.SAUTLIGNE}  {acteur['prenom'].ljust(15)[0:14]} {acteur['nom'].ljust(20)[0:19]}" \
-                    f" {ans} ans {acteur['elo']} elo"
+                    f" {ans} ans {str(acteur['elo']).rjust(4)} elo"
             if len(acteur['nom']) > 20 or len(acteur['prenom']) > 15:
                 page += f" {acteur['prenom']} {acteur['nom']}"
     page += Color.SAUTLIGNE

@@ -41,6 +41,13 @@ def unserial_joueurs(clef_tournoi):
     return liste_joueurs
 
 
+def update_elo(joueur, elo):
+    """Mise à jour du classement elo d'un joueur dans la table joueurs"""
+    query_joueurs = Query()
+    tb.JOUEURS.update({'elo': elo}, (query_joueurs.nom == joueur['nom']) & (query_joueurs.prenom == joueur['prenom'])
+                      & (query_joueurs.date_naissance == joueur['date_naissance']))
+
+
 def serial_clefsjoueurs(tournoi):
     """Serialisation de la liste des clefs des joueurs et insertion dans la table clefsjoueurs"""
     query_matchs = Query()

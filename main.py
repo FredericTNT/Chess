@@ -13,3 +13,4 @@ AUTO = False
 """ Programme principal tournoi d'échecs"""
 if __name__ == '__main__':
     menu_general(NB_JOUEURS, NB_TOURS, AUTO)
+
