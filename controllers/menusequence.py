@@ -50,7 +50,7 @@ def menu_general(nb_joueurs, nb_tours, auto=False):
                     menu_tournoi(tournoi, liste_joueurs, nb_joueurs, auto)
                     menu.etat = f"Le tournoi {tournoi.nom} de {tournoi.lieu} est sauvegardé !"
                 else:
-                    menu.etat = f"Aucun tournoi n'est enregistré, veuillez créer un tournoi !"
+                    menu.etat = "Aucun tournoi n'est enregistré, veuillez créer un tournoi !"
             case "3":
                 print(chess_tournois(tb.TOURNOIS))
             case "4":

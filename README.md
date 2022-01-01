@@ -5,7 +5,7 @@
 2. [Technologies](#technologies)
 3. [Installation](#installation)
 4. [Exécution](#Exécution)
-4. [Maintenabilité du code (PEP 8)](#Maintenabilité_du_code)
+4. [Conformité du code aux directives PEP 8](#Conformité_PEP_8)
 ## Informations_générales
 ***
 Application hors ligne de gestion d'un tournoi d'échecs 
@@ -41,8 +41,14 @@ $ python main.py
 ```
 
 La base json de l'application dénommée chess_db.json est créée dans le répertoire Chess lors de la première exécution.
-## Maintenabilité_du_code
-A compléter
+## Conformité_PEP_8
+***
+La vérification de conformité du code aux directives PEP 8 s'effectue en exécutant le programme flake8.exe à partir du 
+répertoire courant Chess avec les paramètres suivants :
+```
+$ venv\scripts\flake8.exe --show-source --statistics --max-line-length=119 --format=html --htmldir=flake8_rapport main.py, models\, views\, controllers\
+```
+Un rapport index.html est généré dans le sous-répertoire flake8_rapport avec la liste des éventuels points de non-conformité.
 <!---
 ## FAQs
 ***

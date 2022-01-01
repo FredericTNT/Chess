@@ -30,7 +30,7 @@ def tours_tournoi(tournoi):
         page += f"{Color.SAUTLIGNE}  Tour {tour.numero} {Color.YELLOW}{tour.nom}{Color.END}" \
                 f"{Color.SAUTLIGNE}  Tour lancé le {tour.date_heure_debut.isoformat(sep=' ', timespec='seconds')} "
         if not tour.date_heure_fin:
-            page += f"en cours"
+            page += "en cours"
         else:
             page += f"et terminé le {tour.date_heure_fin.isoformat(sep=' ', timespec='seconds')}"
         page += Color.SAUTLIGNE

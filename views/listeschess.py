@@ -1,5 +1,4 @@
 from operator import itemgetter
-from datetime import date
 from views.chessinput import Color
 
 
@@ -33,9 +32,9 @@ def acteurs_tournois(tb_joueurs, ordre="elo"):
         page += f"{Color.SAUTLIGNE}  Aucun joueur n'est inscrit à un tournoi"
     else:
         for acteur in acteurs_tries:
-            ans = '{:>3}'.format(date.today().year - date.fromisoformat(acteur['date_naissance']).year)
+            amj = acteur['date_naissance'].split('-')
             page += f"{Color.SAUTLIGNE}  {acteur['prenom'].ljust(15)[0:14]} {acteur['nom'].ljust(20)[0:19]}" \
-                    f" {ans} ans {str(acteur['elo']).rjust(4)} elo"
+                    f" né(e) le {amj[2]}-{amj[1]}-{amj[0]} ({acteur['sexe']}) {str(acteur['elo']).rjust(4)} elo"
             if len(acteur['nom']) > 20 or len(acteur['prenom']) > 15:
                 page += f" {acteur['prenom']} {acteur['nom']}"
     page += Color.SAUTLIGNE

@@ -126,7 +126,8 @@ def select_tournoi(tb_tournois):
             show_choix_invalide()
         else:
             saisie_correcte = True
-    clef_tournoi = liste_tournois[indice]['nom'] + liste_tournois[indice]['lieu'] + liste_tournois[indice]['date_debut']
+    clef_tournoi = \
+        liste_tournois[indice]['nom'] + liste_tournois[indice]['lieu'] + liste_tournois[indice]['date_debut']
     return clef_tournoi
 
 
