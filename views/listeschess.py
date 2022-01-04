@@ -11,14 +11,14 @@ def chess_tournois(tb_tournois):
     else:
         for tournoi in liste_tournois:
             page += f"{Color.SAUTLIGNE}  {Color.BOLD}Tournoi {tournoi['nom']} de {tournoi['lieu']} " \
-                    f"du {tournoi['date_debut']}"\
-                    f"{Color.SAUTLIGNE}  {Color.END}mode {tournoi['compteur_temps']} {tournoi['nb_tour']} tours - "\
+                    f"du {tournoi['date_debut']}{Color.END}{Color.SAUTLIGNE}" \
+                    f"  mode {tournoi['compteur_temps']} {tournoi['nb_tour']} tours - "\
                     f"Description : {tournoi['description']}{Color.SAUTLIGNE}"
     return page
 
 
 def acteurs_tournois(tb_joueurs, ordre="elo"):
-    """Liste des acteurs des tournois"""
+    """Liste des acteurs des tournois triés par ordre alphabétique ou classement elo"""
     liste_acteurs = tb_joueurs.all()
     page = f"{Color.SAUTLIGNE}{Color.CYAN}-------- Liste des acteurs des tournois "
     if ordre == "elo":

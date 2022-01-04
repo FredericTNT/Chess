@@ -35,22 +35,27 @@ def show_doublon_joueur():
 
 def show_match(match, liste_joueurs):
     """Afficher les deux joueurs d'un match"""
-    joueur_blanc = '{:<15} {:<20}'.format(liste_joueurs[match.blanc[0]].prenom, liste_joueurs[match.blanc[0]].nom)
-    joueur_noir = '{:<15} {:<20}'.format(liste_joueurs[match.noir[0]].prenom, liste_joueurs[match.noir[0]].nom)
-    print(f"{Color.SAUTLIGNE}    {joueur_blanc} {liste_joueurs[match.blanc[0]].elo} elo {Color.YELLOW}vs "
-          f"{Color.END}{joueur_noir} {liste_joueurs[match.noir[0]].elo} elo{Color.SAUTLIGNE}")
+    joueur_blanc = f'{liste_joueurs[match.blanc[0]].prenom.ljust(15)[0:14]} ' \
+                   f'{liste_joueurs[match.blanc[0]].nom.ljust(20)[0:19]}'
+    joueur_noir = f'{liste_joueurs[match.noir[0]].prenom.ljust(15)[0:14]} ' \
+                  f'{liste_joueurs[match.noir[0]].nom.ljust(20)[0:19]}'
+    print(f"{Color.SAUTLIGNE}    {joueur_blanc} {str(liste_joueurs[match.blanc[0]].elo).rjust(4)} elo {Color.YELLOW}"
+          f"vs {Color.END}{joueur_noir} {str(liste_joueurs[match.noir[0]].elo).rjust(4)} elo{Color.SAUTLIGNE}")
 
 
 def show_elo(joueur, elo):
     """Afficher le classement elo d'un joueur de la table joueurs"""
-    ans = '{:>3}'.format(date.today().year - date.fromisoformat(joueur['date_naissance']).year)
-    print(f"{Color.SAUTLIGNE}  {joueur['prenom']} {joueur['nom']} {ans} ans "
+    amj = joueur['date_naissance'].split('-')
+    lib_date_naissance = 'né'
+    if joueur['sexe'] == 'F':
+        lib_date_naissance += 'e'
+    print(f"{Color.SAUTLIGNE}  {joueur['prenom']} {joueur['nom']} {lib_date_naissance} le {amj[2]}-{amj[1]}-{amj[0]} "
           f"{Color.YELLOW}{elo} elo{Color.END}{Color.SAUTLIGNE}")
 
 
 def prompt_champ(message, controle=None):
     """Saisir et contrôler un champ"""
-    prompt = f"{Color.BOLD}  {message} "
+    prompt = f"{Color.BOLD}{message} "
     liste_controle = []
     if controle:
         for clef in controle:
@@ -70,7 +75,7 @@ def saisie_date_naissance():
     """Saisir et contrôler une date de naissance (retour de la date au format objet date)"""
     saisie_correcte = False
     while not saisie_correcte:
-        naissance = prompt_champ("Date de naissance (format JJ-MM-AAAA)")
+        naissance = prompt_champ("  Date de naissance (format JJ-MM-AAAA)")
         jma = naissance.split('-')
         try:
             jour = int(jma[0])
@@ -82,8 +87,7 @@ def saisie_date_naissance():
             else:
                 saisie_correcte = True
         except (ValueError, IndexError):
-            print(f"{Color.SAUTLIGNE}{Color.YELLOW}  "
-                  f"Désolé! Votre saisie ne respecte pas le format ou le calendrier"
+            print(f"{Color.SAUTLIGNE}{Color.YELLOW}  Désolé! Votre saisie ne respecte pas le format ou le calendrier"
                   f"{Color.END}{Color.SAUTLIGNE}")
     return date_naissance
 
@@ -92,7 +96,7 @@ def saisie_elo():
     """Saisir et contrôler le classement elo"""
     saisie_correcte = False
     while not saisie_correcte:
-        elo_str = prompt_champ("Classement elo (chiffre positif)")
+        elo_str = prompt_champ("  Classement elo (chiffre positif)")
         try:
             elo = int(elo_str)
         except ValueError:
@@ -117,7 +121,7 @@ def select_tournoi(tb_tournois):
     print()
     saisie_correcte = False
     while not saisie_correcte:
-        choix = prompt_champ("Votre choix")
+        choix = prompt_champ("  Votre choix")
         try:
             indice = int(choix) - 1
         except ValueError:
@@ -136,7 +140,7 @@ def select_joueur(tb_joueurs):
     query_joueurs = Query()
     poursuivre = True
     while poursuivre:
-        nom = prompt_champ("Nom de famille du joueur")
+        nom = prompt_champ("  Nom de famille du joueur")
         listes_joueurs = tb_joueurs.search(query_joueurs.nom == nom)
         nb_selection = len(listes_joueurs)
         if nb_selection == 0:
@@ -146,7 +150,7 @@ def select_joueur(tb_joueurs):
         elif nb_selection == 1:
             poursuivre = False
         else:
-            prenom = prompt_champ("La sélection comporte plusieurs réponses, merci de préciser.\n  Prénom")
+            prenom = prompt_champ("  La sélection comporte plusieurs réponses, merci de préciser.\n  Prénom")
             listes_joueurs = tb_joueurs.search((query_joueurs.nom == nom) & (query_joueurs.prenom == prenom))
             nb_selection = len(listes_joueurs)
             if nb_selection == 0:

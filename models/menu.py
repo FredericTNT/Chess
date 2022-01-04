@@ -36,6 +36,7 @@ class Menu:
         self.choix = saisie
 
     def indice(self, clef):
+        """Retourner l'index de la ligne dans la liste des lignes"""
         index = -1
         for ligne in self.liste_lignes:
             if ligne.clef == clef:
