@@ -112,6 +112,7 @@ class Tour:
 
     def match_generation(self, nb_match, p_blanc, p_noir, suisse, index_max_joueur):
         """Génération des matchs pour un tour"""
+#        for y in suisse: print(y.indice, y.adversaire, y.rencontres)
         if nb_match == 0:
             return True
         else:

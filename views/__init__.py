@@ -1,1 +1,1 @@
-__all__ = ["chessinput", "listestournoi", "listeschess"]
+__all__ = ["viewschess", "listestournoi", "listeschess"]

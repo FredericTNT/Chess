@@ -1,4 +1,4 @@
-from controllers.menusequence import menu_general
+from controllers.menusequence import Controllers
 
 """ Paramètres généraux de l'application
  - nombre de joueurs (nombre pair pour un appairage correct des matchs)
@@ -9,6 +9,12 @@ NB_JOUEURS = 8
 NB_TOURS = 4
 AUTO = False
 
+
+def main():
+    game = Controllers(NB_JOUEURS, NB_TOURS, AUTO)
+    game.run()
+
+
 """ Programme principal tournoi d'échecs"""
 if __name__ == '__main__':
-    menu_general(NB_JOUEURS, NB_TOURS, AUTO)
+    main()

@@ -14,7 +14,7 @@ Application hors ligne de gestion d'un tournoi d'échecs
 ## Technologies
 ***
 Technologies utilisées dans ce projet :
-* [Windows 10 Famille](https://docs.microsoft.com/fr-fr/windows/whats-new/whats-new-windows-10-version-21h1) : version 21H1 
+* [Windows 10 Famille](https://docs.microsoft.com/fr-fr/windows/whats-new/whats-new-windows-10-version-21h2) : version 21H2 
 * [Python](https://docs.python.org/fr/3.10/) : version 3.10.0
 * [Library - tinydb](https://pypi.org/project/tinydb/) : version 4.5.2
 * [Library - colored](https://pypi.org/project/colored/) : version 1.4.3
